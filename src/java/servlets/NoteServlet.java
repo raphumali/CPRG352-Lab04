@@ -13,24 +13,28 @@ import models.Note;
  */
 public class NoteServlet extends HttpServlet {
 
-    Note note;
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //Attributes
+        Note note;
         String edit = request.getParameter("edit");
         String path = getServletContext().getRealPath("/WEB-INF/note.txt");
-          
-        //Reading the file
-        BufferedReader br;
-        br = new BufferedReader(new FileReader(new File (path)));
         
-        //Reads both the lines form the file
-        String noteTitle = br.readLine();
-        String noteContents = br.readLine();
-        br.close();
+        String noteTitle = null;
+        String noteContents = null;
+        
+        
+        try ( //Reading the file
+                BufferedReader br = new BufferedReader(new FileReader(new File (path)))) {
+            //Reads both the lines form the file
+            noteTitle = br.readLine();
+            noteContents = br.readLine();
+            br.close();
+        }catch(Exception e){
+            System.out.println(e);
+        }
  
+       
         //used to display the text file to jsp
         note = new Note(noteTitle, noteContents);
         request.setAttribute("note", note);
@@ -47,21 +51,21 @@ public class NoteServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        Note note;
         //Attributes
         String editTitle = request.getParameter("title");
         String editContents = request.getParameter("contents");
-     
-        //Accessing the files
         String path = getServletContext().getRealPath("/WEB-INF/note.txt");
-        BufferedReader br;
-        br = new BufferedReader(new FileReader(new File (path)));
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-       
+        
         //Writing new title and contents
-        pw.println(editTitle);
-        pw.println(editContents);
-        pw.close();
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(path, false)))) {
+            //Writing new title and contents
+            pw.println(editTitle);
+            pw.println(editContents);
+            pw.close();
+        }catch(Exception e){
+            System.out.println(e);
+        }
         
         //new title and contents if user has edited the note
         note = new Note(editTitle, editContents);
